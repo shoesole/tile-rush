@@ -3,7 +3,7 @@ import { Dictionary, Game, key, parseKey, validateGrid, isConnected, findWords, 
 import { BotRunner, Clock } from "./botrunner.js";
 import { LEVELS } from "./bot.js";
 
-const APP_VERSION = "1.2"; // bump with VERSION in sw.js whenever public/ changes
+const APP_VERSION = "1.3"; // bump with VERSION in sw.js whenever public/ changes
 const CELL = 44;           // board cell size in plane pixels (matches styles.css)
 const OFF = 60;            // the plane spans cells -OFF..OFF in each direction
 const BOT_NAMES = ["Juno", "Milo", "Ruby"];

@@ -2,7 +2,7 @@
 // so unchanged files cost a tiny 304), so updates show up on the next launch. Offline,
 // or if the network is too slow, the last saved copy is used.
 // Bump VERSION (and APP_VERSION in app.js) whenever any file in public/ changes.
-const VERSION = "tr-v1.2";
+const VERSION = "tr-v1.3";
 const FILES = [
   "./", "index.html", "styles.css", "app.js", "engine.js", "bot.js", "botrunner.js", "bot-worker.js", "words.txt",
   "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png",
