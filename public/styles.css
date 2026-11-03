@@ -225,11 +225,13 @@ button:disabled { opacity: 0.45; cursor: default; }
 @keyframes pulse { 50% { transform: scale(1.04); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent); } }
 
 .rack {
+  --rt: 42px;
   display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px; padding: 6px var(--gutter);
-  min-height: 58px; max-height: 166px; overflow-y: auto; touch-action: none;
+  min-height: 58px; max-height: calc(5 * (var(--rt) * 1.1 + 5px) + 8px); overflow-y: auto;
+  touch-action: pan-y; flex-shrink: 0;
 }
-.rack .tile { position: relative; width: 42px; height: 46px; padding: 0; }
-.rack .tile i { font-size: 23px; }
+.rack .tile { position: relative; width: var(--rt); height: calc(var(--rt) * 1.1); padding: 0; touch-action: none; }
+.rack .tile i { font-size: calc(var(--rt) * 0.55); }
 .rack .tile.selected i { background: var(--accent); color: var(--accent-text); box-shadow: 0 2px 0 var(--accent-edge); transform: translateY(-3px); }
 .rack-empty { color: var(--muted); font-size: 14px; align-self: center; width: 100%; text-align: center; }
 

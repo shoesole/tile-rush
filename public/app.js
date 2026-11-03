@@ -323,6 +323,11 @@ function renderRack() {
     rack.replaceChildren(el("div", "rack-empty", peelState().empty));
     return;
   }
+  // Shrink tiles as the hand grows so it fits in about 3 rows (min 32px); beyond that the rack scrolls.
+  const w = rack.clientWidth - 2 * 16;
+  let size = 42;
+  while (size > 30 && Math.ceil(hand.length / Math.floor((w + 5) / (size + 5))) > 3) size -= 2;
+  rack.style.setProperty("--rt", `${size}px`);
   rack.replaceChildren(...hand.map((l, i) => {
     const t = el("div", "tile", `<i>${l}</i>`);
     t.dataset.idx = i;
@@ -355,7 +360,7 @@ function renderBar() {
   btn.classList.toggle("ready", ps.ready);
   const dump = $("dump-btn");
   dump.disabled = g.bag.length < DUMP_MIN;
-  dump.classList.toggle("armed", S.selected != null);
+  dump.classList.toggle("armed", S.selected != null || !!S.dumpArmed);
   $("back-btn").disabled = !S.history.length;
 
   const rivals = $("rivals");
@@ -539,6 +544,7 @@ function tapCell(x, y) {
 }
 
 function tapRack(idx) {
+  if (S.dumpArmed) { S.dumpArmed = false; return dumpLetter({ from: "rack", idx }); }
   if (S.cursor) return placeAtCursor(idx);
   S.selected = S.selected === idx ? null : idx;
   render();
@@ -678,7 +684,10 @@ $("board").addEventListener("wheel", (e) => {
 // ---------- Buttons ----------
 $("dump-btn").addEventListener("click", () => {
   if (S.selected != null) return dumpLetter({ from: "rack", idx: S.selected });
-  toast("Drag a tile here, or select one in your rack first");
+  if (!S.game.canDump(0)) return toast(`Dump needs ${DUMP_MIN}+ tiles in the pool`);
+  S.dumpArmed = !S.dumpArmed;
+  renderBar();
+  if (S.dumpArmed) toast("Tap the rack tile to dump");
 });
 $("shuffle-btn").addEventListener("click", () => {
   const h = me().hand;
@@ -692,7 +701,10 @@ $("peel-btn").addEventListener("click", () => {
   const ps = peelState();
   const g = S.game, p = me();
   if (!ps.ready) return;
-  if (!isConnected(p.grid)) { S.forceCheck = true; return toast("Join all your tiles into one grid first"); }
+  if (!isConnected(p.grid)) {
+    if (S.mode !== "bots") { S.forceCheck = true; render(); }
+    return toast("Join all your tiles into one grid first");
+  }
   if (ps.action === "peel") {
     g.peel(0);
     buzz(15);
