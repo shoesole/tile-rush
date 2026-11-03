@@ -1,0 +1,5 @@
+# Words added on top of ENABLE (one per line, # starts a comment).
+# All are in Merriam-Webster and the newer official Scrabble lists.
+ki
+qi
+za

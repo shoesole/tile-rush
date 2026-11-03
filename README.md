@@ -18,7 +18,9 @@ their own grid from a shared pool of 144 tiles: peel, dump, and be first to use 
 - **Dump**: return one tile, draw three; only while the pool has 3+.
 - **Finish**: when the pool has fewer tiles than players, the first player with an empty
   hand and a joined-up grid calls it. All words valid wins; otherwise that player is out.
-- Words: ENABLE (168,551 words, 2+ letters). ENABLE has no QI, ZA or KI.
+- Words: ENABLE (2+ letters) plus a few it lacks, listed in `scripts/extra_words.txt`
+  (KI, QI, ZA). 168,554 words in all. To allow another word, add it there and rerun
+  `python3 scripts/build_dict.py`.
 
 ## How the bots play (`bot.js`)
 
@@ -50,7 +52,7 @@ Every game records your tiles per minute, dumps, peels and result (localStorage
   - `app.js`: UI, board pan / pinch / drag, rack, type-a-word cursor, stats, save/resume
   - `words.txt`: dictionary (built, do not edit by hand)
   - `sw.js`: offline support (network-first). **Bump `VERSION` here and `APP_VERSION` in `app.js` whenever anything in `public/` changes.**
-- `scripts/build_dict.py`: rebuilds `words.txt` from `data/enable1.txt` (gitignored)
+- `scripts/build_dict.py`: rebuilds `words.txt` from `data/enable1.txt` (gitignored) plus `scripts/extra_words.txt`
 - `scripts/icon.svg`: source for the PNG icons
 - `test/`: `node test/engine.test.mjs` (rules) and `node test/sim.mjs [games] [level]`
   (bot-only games on a virtual clock; checks every winning grid is valid and no tiles are

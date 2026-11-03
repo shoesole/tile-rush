@@ -1,3 +1,4 @@
 Tile Rush uses the following word list.
 
 ENABLE (Enhanced North American Benchmark Lexicon): public domain.
+A few extra words (scripts/extra_words.txt) are added on top.

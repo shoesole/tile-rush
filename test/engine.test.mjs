@@ -15,7 +15,7 @@ t("bag has 144 tiles in the standard mix", () => {
 });
 
 t("dictionary has 2-letter words and Q without U", () => {
-  for (const w of ["AA", "QAT", "ZAX", "CAT"]) assert.ok(dict.has(w), w);
+  for (const w of ["AA", "QAT", "ZAX", "CAT", "KI", "QI", "ZA"]) assert.ok(dict.has(w), w);
   assert.ok(!dict.has("XQZ"));
 });
 

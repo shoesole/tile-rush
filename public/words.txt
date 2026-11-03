@@ -78738,6 +78738,7 @@ khirkahs
 khis
 khoum
 khoums
+ki
 kiang
 kiangs
 kiaugh
@@ -118062,6 +118063,7 @@ qanat
 qanats
 qat
 qats
+qi
 qindar
 qindarka
 qindars
@@ -168018,6 +168020,7 @@ yurt
 yurta
 yurts
 ywis
+za
 zabaglione
 zabagliones
 zabaione
