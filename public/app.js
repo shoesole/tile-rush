@@ -3,7 +3,7 @@ import { Dictionary, Game, key, parseKey, validateGrid, isConnected, findWords, 
 import { BotRunner, Clock } from "./botrunner.js";
 import { LEVELS } from "./bot.js";
 
-const APP_VERSION = "1.1"; // bump with VERSION in sw.js whenever public/ changes
+const APP_VERSION = "1.2"; // bump with VERSION in sw.js whenever public/ changes
 const CELL = 44;           // board cell size in plane pixels (matches styles.css)
 const OFF = 60;            // the plane spans cells -OFF..OFF in each direction
 const BOT_NAMES = ["Juno", "Milo", "Ruby"];
@@ -167,7 +167,7 @@ function startSession({ mode, game, level, pool, pressure, elapsed, nextDrawIn, 
   S = {
     mode, game, level, pool, pressure, clock,
     check: (mode === "bots" ? settings.checkBots : settings.checkSolo) === "on",
-    runner: null, cursor: null, selected: null, history: [], recent: null, forceCheck: false,
+    runner: null, cursor: null, selected: null, undo: [], recent: null, forceCheck: false,
     view: view ?? { tx: 0, ty: 0, s: 1 }, nextDrawAt: mode === "pressure" ? elapsed + (nextDrawIn ?? pressure * 1000) : null,
     ended: false, lastSave: 0,
   };
@@ -361,7 +361,7 @@ function renderBar() {
   const dump = $("dump-btn");
   dump.disabled = g.bag.length < DUMP_MIN;
   dump.classList.toggle("armed", S.selected != null || !!S.dumpArmed);
-  $("back-btn").disabled = !S.history.length;
+  $("back-btn").disabled = !S.undo.length;
 
   const rivals = $("rivals");
   const bots = g.players.map((p, i) => [p, i]).filter(([p]) => p.isBot);
@@ -435,6 +435,37 @@ function cellAt(clientX, clientY) {
 const inside = (r, x, y) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 
 // ---------- Moves (the human's grid and hand) ----------
+// Undo history: a snapshot of the grid (and cursor) before each change, up to UNDO_MAX.
+// Undo restores the grid; the hand becomes "everything else you hold", so tiles that
+// arrived since (peels, pressure draws) stay in your rack. A dump clears the history.
+const UNDO_MAX = 100;
+function remember() {
+  S.undo.push({ grid: [...me().grid], cursor: S.cursor && { ...S.cursor } });
+  if (S.undo.length > UNDO_MAX) S.undo.shift();
+}
+
+function undo() {
+  const snap = S.undo.pop();
+  if (!snap) return toast("Nothing to undo");
+  const p = me();
+  const left = new Map();
+  for (const l of [...p.hand, ...p.grid.values()]) left.set(l, (left.get(l) ?? 0) + 1);
+  for (const [, l] of snap.grid) {
+    if (!left.get(l)) { S.undo = []; render(); return toast("Can't undo past that"); }
+    left.set(l, left.get(l) - 1);
+  }
+  // Keep the rack order you had; tiles coming off the board go on the end.
+  const hand = [];
+  for (const l of p.hand) if (left.get(l)) { hand.push(l); left.set(l, left.get(l) - 1); }
+  for (const l of p.grid.values()) if (left.get(l)) { hand.push(l); left.set(l, left.get(l) - 1); }
+  p.grid = new Map(snap.grid);
+  p.hand = hand;
+  S.cursor = snap.cursor;
+  S.selected = null;
+  buzz();
+  changed();
+}
+
 function changed(k) {
   if (k) S.recent = k;
   S.forceCheck = false;
@@ -447,6 +478,7 @@ function placeFromRack(idx, x, y) {
   const k = key(x, y);
   const l = p.hand[idx];
   if (l == null) return;
+  remember();
   p.hand.splice(idx, 1);
   if (p.grid.has(k)) p.hand.push(p.grid.get(k)); // swap the old tile back to the rack
   p.grid.set(k, l);
@@ -459,10 +491,10 @@ function moveOnBoard(from, x, y) {
   const p = me();
   const to = key(x, y);
   if (from === to || !p.grid.has(from)) return;
+  remember();
   const l = p.grid.get(from);
   if (p.grid.has(to)) p.grid.set(from, p.grid.get(to)); else p.grid.delete(from);
   p.grid.set(to, l);
-  S.history = S.history.filter((h) => h !== from && h !== to);
   buzz();
   changed(to);
 }
@@ -470,9 +502,9 @@ function moveOnBoard(from, x, y) {
 function returnToRack(k) {
   const p = me();
   if (!p.grid.has(k)) return;
+  remember();
   p.hand.push(p.grid.get(k));
   p.grid.delete(k);
-  S.history = S.history.filter((h) => h !== k);
   changed();
 }
 
@@ -486,13 +518,13 @@ function dumpLetter(source) {
     if (!letter) return;
     p.grid.delete(source.key);
     p.hand.push(letter);
-    S.history = S.history.filter((h) => h !== source.key);
   } else letter = p.hand[source.idx];
   // Engine dumps the first matching letter; move this one to the front so it's the one used.
   const at = source.from === "board" ? p.hand.length - 1 : source.idx;
   p.hand.splice(at, 1);
   p.hand.unshift(letter);
   const drawn = g.dump(0, letter);
+  S.undo = []; // the dumped tile is gone, so earlier grids can't come back
   S.selected = null;
   buzz(20);
   toast(`Dumped ${letter} · drew ${drawn.join(" ")}`);
@@ -507,38 +539,22 @@ function placeAtCursor(idx) {
   let { x, y } = c;
   while (p.grid.has(key(x, y))) { x += dx; y += dy; }
   const l = p.hand[idx];
+  remember();
   p.hand.splice(idx, 1);
   const k = key(x, y);
   p.grid.set(k, l);
-  S.history.push(k);
   S.cursor = { x: x + dx, y: y + dy, dir: c.dir };
   buzz();
   changed(k);
 }
 
-function takeBack() {
-  const k = S.history.pop();
-  if (!k) return;
-  const p = me();
-  if (p.grid.has(k)) {
-    p.hand.push(p.grid.get(k));
-    p.grid.delete(k);
-    const [x, y] = parseKey(k);
-    S.cursor = { x, y, dir: S.cursor?.dir ?? "across" };
-  }
-  changed();
-}
-
 function tapCell(x, y) {
-  const p = me();
-  const k = key(x, y);
   if (S.selected != null) return placeFromRack(S.selected, x, y);
   const c = S.cursor;
   if (c && c.x === x && c.y === y) {
     S.cursor = c.dir === "across" ? { ...c, dir: "down" } : null;
   } else {
     S.cursor = { x, y, dir: c?.dir ?? "across" };
-    if (!p.grid.has(k)) S.history = [];
   }
   render();
 }
@@ -695,7 +711,7 @@ $("shuffle-btn").addEventListener("click", () => {
   S.selected = null; render();
 });
 $("sort-btn").addEventListener("click", () => { me().hand.sort(); S.selected = null; render(); });
-$("back-btn").addEventListener("click", takeBack);
+$("back-btn").addEventListener("click", undo);
 $("center-btn").addEventListener("click", () => { centerView(); applyView(); });
 $("peel-btn").addEventListener("click", () => {
   const ps = peelState();
@@ -747,12 +763,12 @@ document.addEventListener("visibilitychange", () => {
 document.addEventListener("keydown", (e) => {
   if (!S || S.ended || !$("game").classList.contains("active") || !$("pause").hidden) return;
   const k = e.key;
-  if (/^[a-z]$/i.test(k)) {
+  if (/^[a-z]$/i.test(k) && !e.metaKey && !e.ctrlKey) {
     if (!S.cursor) return toast("Tap a square first");
     const idx = me().hand.indexOf(k.toUpperCase());
     if (idx < 0) return toast(`No ${k.toUpperCase()} in your rack`);
     placeAtCursor(idx);
-  } else if (k === "Backspace") { takeBack(); }
+  } else if (k === "Backspace" || ((e.metaKey || e.ctrlKey) && k.toLowerCase() === "z")) { e.preventDefault(); undo(); }
   else if (k === " " && S.cursor) { e.preventDefault(); S.cursor.dir = S.cursor.dir === "across" ? "down" : "across"; render(); }
   else if (k.startsWith("Arrow") && S.cursor) {
     e.preventDefault();

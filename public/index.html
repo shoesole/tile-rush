@@ -102,10 +102,11 @@
       <h3>Controls</h3>
       <ul>
         <li><b>Drag</b> tiles from your rack onto the board, around the board, back to the rack, or onto Dump.</li>
-        <li><b>Type a word:</b> tap an empty square (tap again to switch across/down), then tap rack tiles. The cursor skips over letters already there. <b>⌫</b> takes the last one back.</li>
+        <li><b>Type a word:</b> tap an empty square (tap again to switch across/down), then tap rack tiles. The cursor skips over letters already there.</li>
         <li><b>Tap a rack tile</b> then a square to place it.</li>
+        <li><b>↶ Undo</b> steps back through your moves: drags, swaps, typed letters, tiles sent back to the rack. Tiles you were dealt in the meantime stay in your rack. A dump clears the undo history.</li>
         <li>Drag empty space to move around; pinch to zoom; <b>⌖</b> re-centres.</li>
-        <li>On a keyboard: type letters, Backspace, arrows, and Space to switch direction.</li>
+        <li>On a keyboard: type letters, Backspace or ⌘Z to undo, arrows, and Space to switch direction.</li>
       </ul>
     </div>
   </section>
@@ -127,7 +128,7 @@
       <button id="dump-btn" class="act dump" aria-label="Dump">Dump</button>
       <button id="shuffle-btn" class="act" aria-label="Shuffle rack">⤮</button>
       <button id="sort-btn" class="act" aria-label="Sort rack A to Z">A–Z</button>
-      <button id="back-btn" class="act" aria-label="Take back last tile">⌫</button>
+      <button id="back-btn" class="act" aria-label="Undo">↶</button>
       <button id="center-btn" class="act" aria-label="Centre the board">⌖</button>
       <button id="peel-btn" class="act peel" disabled>Peel</button>
     </div>
