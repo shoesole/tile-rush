@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Tile Rush</title>
+  <meta name="description" content="A fast crossword-tile race: build your own grid, peel, dump, and beat the bots. No ads.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Tile Rush">
+  <meta name="theme-color" content="#f4efe4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14213d" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Home -->
+  <section id="home" class="screen active">
+    <header class="brand">
+      <div class="logo" aria-hidden="true"><span>T</span><span>I</span><span>L</span><span>E</span></div>
+      <h1>Tile Rush</h1>
+      <p class="tagline">Build your grid. Peel. Race.</p>
+    </header>
+
+    <button id="resume" class="resume" hidden>
+      <span class="btn-title">Resume game</span>
+      <span class="btn-sub" id="resume-sub"></span>
+    </button>
+
+    <div class="play-buttons">
+      <button id="play-bots" class="btn primary big" disabled>
+        <span class="btn-title">Race the Bots</span>
+        <span class="btn-sub" id="bots-sub"></span>
+      </button>
+      <button id="play-solo" class="btn secondary big" disabled>
+        <span class="btn-title">Solo Race</span>
+        <span class="btn-sub" id="solo-sub"></span>
+      </button>
+      <button id="play-pressure" class="btn secondary big" disabled>
+        <span class="btn-title">Solo Pressure</span>
+        <span class="btn-sub" id="pressure-sub"></span>
+      </button>
+    </div>
+    <p class="status" id="status">Loading dictionary…</p>
+
+    <button id="open-settings" class="settings-link">
+      <span id="settings-summary"></span>
+      <span class="settings-link-label">Settings ›</span>
+    </button>
+    <button id="open-rules" class="settings-link">
+      <span>How to play</span>
+      <span class="settings-link-label">Rules ›</span>
+    </button>
+
+    <div class="stats" id="stats"></div>
+    <p class="fine">Tap “Share → Add to Home Screen” in Safari to install.<br><span id="version"></span></p>
+  </section>
+
+  <!-- Settings -->
+  <section id="settings" class="screen">
+    <div class="screen-head">
+      <button class="icon-btn back" data-go="home" aria-label="Back">‹</button>
+      <h2>Settings</h2>
+      <span class="icon-btn-spacer"></span>
+    </div>
+
+    <h3 class="settings-group">Race the Bots</h3>
+    <div class="setting"><span>Bots</span><div class="seg" data-setting="bots" data-options="1,2,3"></div></div>
+    <div class="setting"><span>Level</span><div class="seg" data-setting="level" data-options="easy:Easy,medium:Medium,hard:Hard"></div></div>
+    <div class="setting"><span>Show bad words</span><div class="seg" data-setting="checkBots" data-options="off:Off,on:On"></div></div>
+    <p class="setting-note">Off by default: as in the real game, a bad word when you call it means you lose. Turn it on to practise.</p>
+
+    <h3 class="settings-group">Solo</h3>
+    <div class="setting"><span>Pool size</span><div class="seg" data-setting="pool" data-options="60:60,100:100,144:144"></div></div>
+    <p class="setting-note">Tiles in the game, including your 21 to start. 144 is a full set.</p>
+    <div class="setting"><span>Pressure draw</span><div class="seg" data-setting="pressure" data-options="30:30s,45:45s,60:60s,90:90s"></div></div>
+    <p class="setting-note">In Solo Pressure you get a new tile this often, on top of your own peels.</p>
+    <div class="setting"><span>Show bad words</span><div class="seg" data-setting="checkSolo" data-options="off:Off,on:On"></div></div>
+
+    <h3 class="settings-group">App</h3>
+    <div class="setting"><span>Theme</span><div class="seg" data-setting="theme" data-options="system:Auto,light:Light,dark:Dark"></div></div>
+    <div class="setting"><span>Haptics</span><div class="seg" data-setting="haptics" data-options="off:Off,on:On"></div></div>
+    <button id="reset-stats" class="btn secondary reset-btn">Reset stats</button>
+  </section>
+
+  <!-- Rules -->
+  <section id="rules" class="screen">
+    <div class="screen-head">
+      <button class="icon-btn back" data-go="home" aria-label="Back">‹</button>
+      <h2>How to play</h2>
+      <span class="icon-btn-spacer"></span>
+    </div>
+    <div class="rules">
+      <p>Everyone starts with <b>21 tiles</b> and builds their <b>own</b> crossword grid. Every row and column of two or more letters must be a word, and all your tiles must join up into one grid. You can rearrange your grid any time.</p>
+      <p><b>Peel:</b> when every tile in your hand is on your grid, tap <b>Peel</b>. <b>Everyone</b> draws one new tile, including the bots. When a bot peels, you get a tile too.</p>
+      <p><b>Dump:</b> stuck with a hard letter? Drag it onto <b>Dump</b> (or select it and tap Dump). It goes back in the pool and you draw <b>three</b>. Only while the pool has 3 or more.</p>
+      <p><b>Finish:</b> once the pool has fewer tiles than players, the first to use every tile wins. Against bots, any bad word at that moment means you lose. Solo, you just get told what to fix.</p>
+      <p><b>Words:</b> anything in the ENABLE list (about 168,000 words, close to the Scrabble list), two letters and up. No names or abbreviations.</p>
+      <h3>Controls</h3>
+      <ul>
+        <li><b>Drag</b> tiles from your rack onto the board, around the board, back to the rack, or onto Dump.</li>
+        <li><b>Type a word:</b> tap an empty square (tap again to switch across/down), then tap rack tiles. The cursor skips over letters already there. <b>⌫</b> takes the last one back.</li>
+        <li><b>Tap a rack tile</b> then a square to place it.</li>
+        <li>Drag empty space to move around; pinch to zoom; <b>⌖</b> re-centres.</li>
+        <li>On a keyboard: type letters, Backspace, arrows, and Space to switch direction.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Game -->
+  <section id="game" class="screen game">
+    <div class="topbar">
+      <button id="menu-btn" class="icon-btn" aria-label="Pause">❚❚</button>
+      <div class="clock" id="clock">0:00</div>
+      <div class="pool"><span id="pool-count">0</span><small>pool</small></div>
+    </div>
+    <div class="rivals" id="rivals"></div>
+    <div class="board" id="board">
+      <div class="plane" id="plane"></div>
+      <div class="toast" id="toast" hidden></div>
+      <div class="pressure-bar" id="pressure-bar" hidden><span></span></div>
+    </div>
+    <div class="actions">
+      <button id="dump-btn" class="act dump" aria-label="Dump">Dump</button>
+      <button id="shuffle-btn" class="act" aria-label="Shuffle rack">⤮</button>
+      <button id="sort-btn" class="act" aria-label="Sort rack A to Z">A–Z</button>
+      <button id="back-btn" class="act" aria-label="Take back last tile">⌫</button>
+      <button id="center-btn" class="act" aria-label="Centre the board">⌖</button>
+      <button id="peel-btn" class="act peel" disabled>Peel</button>
+    </div>
+    <div class="rack" id="rack"></div>
+  </section>
+
+  <!-- Results -->
+  <section id="results" class="screen">
+    <div class="result-head">
+      <div class="result-title" id="result-title"></div>
+      <div class="result-sub" id="result-sub"></div>
+    </div>
+    <div class="result-stats" id="result-stats"></div>
+    <div class="result-tabs" id="result-tabs"></div>
+    <div class="mini-wrap" id="mini-wrap"></div>
+    <div class="result-words" id="result-words"></div>
+    <div class="play-buttons result-buttons">
+      <button id="again" class="btn primary">Play again</button>
+      <button id="home-btn" class="btn secondary">Home</button>
+    </div>
+  </section>
+
+  <!-- Pause menu -->
+  <div class="overlay" id="pause" hidden>
+    <div class="sheet">
+      <h2>Paused</h2>
+      <button id="resume-btn" class="btn primary">Resume</button>
+      <button id="quit-btn" class="btn secondary">Give up</button>
+      <button id="save-exit-btn" class="btn secondary">Save &amp; exit</button>
+    </div>
+  </div>
+
+  <label id="haptic" aria-hidden="true" class="haptic"><input type="checkbox" switch></label>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

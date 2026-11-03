@@ -1,0 +1,3 @@
+Tile Rush uses the following word list.
+
+ENABLE (Enhanced North American Benchmark Lexicon): public domain.
